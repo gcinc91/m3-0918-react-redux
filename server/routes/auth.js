@@ -8,32 +8,34 @@ const bcrypt = require("bcrypt");
 const bcryptSalt = 10;
 
 
-router.get("/login", (req, res, next) => {
-  res.render("auth/login", { "message": req.flash("error") });
-});
+let loginPromise = (req, user) => {
+  return new Promise((resolve,reject) => {
+    req.login(user, e => e? reject(e):resolve(user))
+  })
+}
 
-router.post("/login", passport.authenticate("local", {
-  successRedirect: "/",
-  failureRedirect: "/auth/login",
-  failureFlash: true,
-  passReqToCallback: true
-}));
+router.post("/login", (req, res, next) => {
 
-router.get("/signup", (req, res, next) => {
-  res.render("auth/signup");
+  passport.authenticate("local",(err, theUser, failureDetails) => {
+    if (err) return res.status(500).json({ message: 'Something went wrong' });
+    if (!theUser) return res.status(401).json(failureDetails);
+    loginPromise(req, theUser)
+      .then(() => res.status(200).json(req.user))
+      .catch(e => res.status(500).json({ message: e.message }));
+  })(req,res,next)
 });
 
 router.post("/signup", (req, res, next) => {
   const username = req.body.username;
   const password = req.body.password;
   if (username === "" || password === "") {
-    res.render("auth/signup", { message: "Indicate username and password" });
+    res.json( { message: "Indicate username and password" })
     return;
   }
 
   User.findOne({ username }, "username", (err, user) => {
     if (user !== null) {
-      res.render("auth/signup", { message: "The username already exists" });
+      res.json( { message: "The username already exists" })
       return;
     }
 
@@ -46,18 +48,29 @@ router.post("/signup", (req, res, next) => {
     });
 
     newUser.save()
-    .then(() => {
-      res.redirect("/");
+    .then(user => loginPromise(req,user))
+    .then(user => {
+      res.json({user})
     })
     .catch(err => {
-      res.render("auth/signup", { message: "Something went wrong" });
+      res.json({ message: "Something went wrong" })
     })
   });
 });
 
+router.get("/currentuser", (req, res) => {
+  const {user} = req;
+  if(user){
+    res.json({succes: "OK", user})
+  }else{
+    res.status(401).json({succes: "NO USER LOGGED IN"})
+  }
+});
+
+
 router.get("/logout", (req, res) => {
   req.logout();
-  res.redirect("/");
+  res.json({succes: "OK"})
 });
 
 module.exports = router;
