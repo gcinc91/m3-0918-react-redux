@@ -1,3 +1,4 @@
+
 import React, {Component} from "react";
 import PropTypes from 'prop-types';
 import styled from '@emotion/styled';
@@ -99,6 +100,7 @@ class BarePokemon extends Component {
         console.log("CLICK ON POKEMON");
         const {selected, data} = this.state;
         const { dispatch } = this.props;
+        const { isFavorite, lastPokemon } = this.props;
         this.setState({selected: !selected});
 
         if(this.props.enableChange){
@@ -109,17 +111,20 @@ class BarePokemon extends Component {
             if(!selected){
                 dispatch({type:"SELECT_POKEMON", pokemon:{id:this.props.id, ...this.state.data}});
             }else{
+                if (lastPokemon){dispatch({type: "UNSELECT_POKEMON",pokemon: {id:{lastPokemon},...this.state.data }})}
                 dispatch({type:"UNSELECT_POKEMON", pokemon:{id:this.props.id, ...this.state.data}});
             }
+
+            
         }
     }
 
     render(){
-        const {id, isFavorite} = this.props;
+        const {id, isFavorite, lastPokemon} = this.props;
         const {selected, data} = this.state;
         console.log("RENDERPOKEMON")
         return (
-            <PokeBall className={cx({selected, isFavorite})} onClick={() => this.handleClick()}>
+            <PokeBall className={cx({selected, isFavorite, lastPokemon})} onClick={() => this.handleClick()}>
                 <div className="cnt">
                 {data ? 
                     selected ? <img src={data.front_default} alt=""/> : <p>#{id}</p>

@@ -7,6 +7,6 @@ import _ from 'lodash';
 export const AboutPage = () => (
     <div>
         <FavoritePokemon />
-        <PokemonList list={_.range(1,6)} />
+        <PokemonList list={_.range(144,147)} />
     </div>
 )

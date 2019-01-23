@@ -2,6 +2,7 @@
 const initialStore = {
     user: null,
     favoritePokemon: null,
+    lastPokemon: null,
     numClicks: 0
 }
 
@@ -16,13 +17,15 @@ export const rootReducer = (store = initialStore, action) => {
         case "SELECT_POKEMON":
             store = {
                 ...store,
-                favoritePokemon: action.pokemon
+                favoritePokemon: action.pokemon,
+                lastPokemon: action.pokemon.id
             }
         break;
         case "UNSELECT_POKEMON":
         store = {
             ...store,
-            favoritePokemon: null
+            favoritePokemon: null,
+            lastPokemon: null
         }
         break;
         default: return store
